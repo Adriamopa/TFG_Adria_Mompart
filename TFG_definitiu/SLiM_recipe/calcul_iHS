@@ -1,0 +1,132 @@
+// Same than the other recipe but scalated :)
+
+function (float)mutTypeFrequency(o<MutationType>$ mutType)
+{
+        muts = sim.mutationsOfType(mutType);
+        if (muts.size() > 0)
+                return sim.mutationFrequencies(NULL, muts);
+        return NULL;
+}
+
+initialize() {
+	if (exists("slimgui")) {
+        // Scaling factor
+        defineConstant("Q", 1);
+
+        // Real population size
+        defineConstant("N", 10000);
+
+        // Define population, scalate selection coef + coupled mutation-recombination rate
+//        defineConstant("alpha",  a); // 
+        defineConstant("sweep_freq", 0.8); // set sweep final Freq
+
+        // Define amount of time it takes the sweep to be stablished (from burning to X generation)
+        // Here we set it to 10000 generations (in this case it doesn't matter) 
+        // rescheduleScriptBlock s2 will automatically end the simulation once sweep_freq is reached
+        defineConstant("L", 1e6);
+        
+        // Selection coefficient of the mutation
+        defineConstant("S", 0.01);
+        defineConstant("rho_theta", 500);
+        defineConstant("MR", 1);
+        defineConstant("RR", 1);
+        defineConstant("output","TFG_definitiu/vcfs_tfg/iHS.vcf");
+        }
+        
+        
+        // Rescaled Ne        
+        defineConstant("N_rescaled", asInteger(N/Q));
+        // Define burning period as 10*N_rescaled
+        defineConstant("gen_burnin",asInteger(10*N_rescaled));
+        defineConstant("gen_stop",gen_burnin + 10000);
+        
+        
+        // Genomic elements and mutations types
+        initializeMutationType("m1", 0.5, "f", 0.0);
+        // m2 sweep mutation. s is rescaled by the N_rescaled pop size.
+//        initializeMutationType("m2", 0.5, "f", alpha/(2*N_rescaled));
+		  initializeMutationType("m2", 0.5, "f", S);
+        initializeGenomicElementType("g1", m1, 1.0);
+        initializeGenomicElement(g1, 0, L-1);
+
+        // Define mut and recom rates
+        initializeMutationRate((rho_theta/(4*N_rescaled*L))*MR);
+        recombination_rate = rho_theta/(4*N*L) ;
+        initializeRecombinationRate(((1-(1-2*recombination_rate)^Q)/2)*RR);
+
+}
+
+1 early() {
+        // save present run id
+        // will be used to save and restore
+        defineConstant("sim_id", getSeed());
+        sim.addSubpop("p1", N_rescaled);
+
+        //Set variables script blocks using burnin generations
+        community.rescheduleScriptBlock(s1, start=gen_burnin, end=gen_burnin);
+        community.rescheduleScriptBlock(s2, start=gen_burnin, end=gen_stop);
+        community.rescheduleScriptBlock(s3, start=gen_stop, end=gen_stop);
+        
+
+//        log = community.createLogFile("/outputPath/SLiMsims/test_a"+a+"_repl"+nrepl+".txt", logInterval=1);
+//        log.addCycle();
+//        log.addCustomColumn("freq", "mutTypeFrequency(m2);");
+}
+
+s1 late() {
+        // save the state of the simulation
+        sim.outputFull("TFG_definitiu/slimis_tfg" + "slim_iHS_" + sim_id + ".txt");
+        // introduce the sweep mutation
+        target = sample(p1.genomes, 1); // meaning 1/N (?)
+        //mutPos = rdunif(1, 1, L-1); // so we can retrieve the position
+        mut_pos = asInteger((L-1)/2);
+        target.addNewDrawnMutation(m2, mut_pos);
+        cat("Position " + mut_pos + " is mutated\n");
+}
+
+s2 late() {
+
+        // Check mutation
+        mut = sim.mutationsOfType(m2);
+
+        if (size(mut) == 1)
+        {
+                // Check the final frequency of the mutation
+                mut_freq = sim.mutationFrequencies(NULL, mut);
+                cat(sim.cycle + ": " + mut_freq + "\t");
+
+                // select sweep frequency
+                if (mut_freq > (sweep_freq - 0.1) & mut_freq<=sweep_freq)
+                {
+                        mut_freq = sim.mutationFrequencies(NULL, mut);
+                        cat(" Final freq: "+ mut_freq +"\n");
+                        cat(sim_id + ": ESTABLISHED\n\n");
+                        		p1.outputVCFSample(sampleSize = 500,outputMultiallelics=F,filePath=output,  simplifyNucleotides=T);
+                        community.deregisterScriptBlock(self);
+                        sim.simulationFinished();
+                }
+        }
+        else
+        {
+                cat(sim_id + ": LOST \n RESTARTING\n\n");
+
+                // go back to s1 late()
+                sim.readFromPopulationFile("TFG_definitiu/slimis_tfg/" + "slim_iHS_" + sim_id + ".txt");
+
+                // start a newly seeded run
+                setSeed(rdunif(1, 0, asInteger(2^62) - 1));
+                cat(getSeed());
+
+                // re-introduce the sweep mutation
+                target = sample(p1.genomes, 1);
+                //mutPos = rdunif(1, 1, L-1);
+                mut_pos = asInteger((L-1)/2);
+                target.addNewDrawnMutation(m2, mut_pos);
+                cat("Position " + mut_pos + " is mutated\n");
+
+        }
+}
+
+s3 late() {
+        sim.simulationFinished();
+}
