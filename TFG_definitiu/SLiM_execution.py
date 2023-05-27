@@ -5,8 +5,9 @@ import time
 def repeated_iHS_SLIM(variable, path="/SLiM_recipe/calcul_iHS", output='/TFG_definitiu/vcfs_tfg/iHS', Q=1,
                          N=10000,sweep=0.7, L='1e6', S=0.01, rho_theta=500, MR=1, RR=1, num_rep=5):
     """
-    From the data comprised in the FiltInput class generates a bcftools command line and executes it with the run
-    function of the subprocess time. Also prints the time it takes for the process to execute.
+    This function receives at least a variable and runs the SLiM recipe in path with the variable values predefined 
+    as parameters of the function plus the variable that has been chosen. The SLiM recipe is run num_rep number of times. 
+    The output VCF files are saved in path.
     """
     dict = {'Q': Q, 'N': N, 'sweep': sweep, 'L': L, 'S': S, 'rho_theta': rho_theta, 'MR': MR, 'RR': RR, '': 'null'}
     print('SLiM iHS:')
