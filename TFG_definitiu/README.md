@@ -33,3 +33,9 @@ Required programs to execute this pipeline include:
   - Numpy
   - Time
   - Subprocess
+
+Lastly, to execute the SLiM recipe, the SLIM_interface.py file has to be modified to suit the parameter that wants to be modified and the amount of repetitions that want to be made:
+
+repeated_iHS_SLIM(variable='S', S=0.008, num_rep=5)
+
+In this case, the modified parameter is the selection coefficient, it is modified to a value of 0.008, and the number of repetitions is 5.
