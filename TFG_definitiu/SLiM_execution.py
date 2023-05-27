@@ -7,7 +7,8 @@ def repeated_iHS_SLIM(variable, path="/SLiM_recipe/calcul_iHS", output='/TFG_def
     """
     This function receives at least a variable and runs the SLiM recipe in path with the variable values predefined 
     as parameters of the function plus the variable that has been chosen. The SLiM recipe is run num_rep number of times. 
-    The output VCF files are saved in path.
+    The output VCF files are saved in path. Possible variables that can be changed are: N (size of population), 
+    sweep (sweep mutation frequency), L (chromosome length), S (selection coefficient), MR (mutation rate), RR (recombination rate).
     """
     dict = {'Q': Q, 'N': N, 'sweep': sweep, 'L': L, 'S': S, 'rho_theta': rho_theta, 'MR': MR, 'RR': RR, '': 'null'}
     print('SLiM iHS:')
