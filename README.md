@@ -21,7 +21,7 @@ python3 PATH\TFG_definitiu\Execution_interface.py -s std_ihs -vcf 'PATH\TFG_defi
 As for now, all output files and plots produced are saved with predetermined names in predetermined folders, but this is to be optional in the future. This project is ambitioned to also be able to analyze cross_population extended haplotype homozygosity (XP_EHH), but
 up to date only ihs is supported. Execution can be of 1 or of multiple files. Besides, it considers a chromosome of 1Mb fixed length. It should be however updated in the future.
 
-Lastly, to change a file from vcf to zarr:
+To change a file from vcf to zarr:
 
 python3 PATH\TFG_definitiu\Execution_interface.py -vcf 'PATH\TFG_definitiu\vcfs_tfg\NAME.vcf' -z 'PATH\TFG_definitiu\zarrs_tfg\NAME.zarr'
 
@@ -33,3 +33,9 @@ Required programs to execute this pipeline include:
   - Numpy
   - Time
   - Subprocess
+
+Lastly, to execute the SLiM recipe, the SLIM_interface.py file has to be modified to suit the parameter that wants to be modified and the amount of repetitions that want to be made:
+
+repeated_iHS_SLIM(variable='S', S=0.008, num_rep=5)
+
+In this case, the modified parameter is the selection coefficient, it is modified to a value of 0.008, and the number of repetitions is 5.
